@@ -1,3 +1,3 @@
 export let gameState = {
-  playerCoordinate: [0, 0],
+  playerCoordinate: [8, 8],
 };

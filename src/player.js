@@ -1,4 +1,5 @@
 import { TILE_SIZE } from "./constants.js";
+import { gameState } from "./state.js";
 
 export class Player {
   constructor() {
@@ -11,15 +12,18 @@ export class Player {
       if (e.key === "ArrowDown") this.y += 1;
       if (e.key === "ArrowLeft") this.x -= 1;
       if (e.key === "ArrowRight") this.x += 1;
+
+      gameState.playerCoordinate = [this.x, this.y];
     });
   }
 
   update() {}
 
-  draw() {
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+  draw(ctx, offsetX, offsetY) {
+    const worldX = this.x * TILE_SIZE;
+    const worldY = this.y * TILE_SIZE;
+
     ctx.fillStyle = "#ff0000";
-    ctx.fillRect(this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    ctx.fillRect(worldX + offsetX, worldY + offsetY, TILE_SIZE, TILE_SIZE);
   }
 }
