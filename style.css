@@ -1,0 +1,16 @@
+/* style.css */
+body {
+  margin: 0;
+  background-color: #050505; /* Un noir presque pur */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+canvas {
+  border: 2px solid #1a1a1a;
+  image-rendering: pixelated; /* Crucial pour le rendu rétro net */
+  background-color: #000;
+}
