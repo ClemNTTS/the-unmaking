@@ -1,4 +1,9 @@
-import { CHUNK_SIZE, TILE_SIZE, VIEWPORT_WIDTH_HEIGHT } from "./constants.js";
+import {
+  CHUNK_SIZE,
+  TILE_SIZE,
+  VIEWPORT_WIDTH_HEIGHT,
+  VISION_RADIUS,
+} from "./constants.js";
 import { Player } from "./player.js";
 import { gameState } from "./state.js";
 import { World } from "./world.js";
@@ -10,17 +15,25 @@ canvas.width = VIEWPORT_WIDTH_HEIGHT;
 canvas.height = VIEWPORT_WIDTH_HEIGHT;
 
 const world = new World();
-const player = new Player();
+const player = new Player(world);
 player.x = gameState.playerCoordinate[0];
 player.y = gameState.playerCoordinate[1];
 
 function update() {}
 
-function drawTile(tileType, worldX, worldY, offsetX, offsetY) {
+function drawTile(tileType, worldX, worldY, offsetX, offsetY, state) {
   if (tileType === 1) {
     ctx.fillStyle = "#fff";
+  } else if (tileType === 3) {
+    ctx.fillStyle = "#28d751";
   } else {
-    ctx.fillStyle = "#330e7d";
+    ctx.fillStyle = "#734141";
+  }
+
+  if (state === "visited") {
+    ctx.globalAlpha = 0.5;
+  } else if (state === "visible") {
+    ctx.globalAlpha = 1;
   }
 
   ctx.fillRect(
@@ -32,7 +45,7 @@ function drawTile(tileType, worldX, worldY, offsetX, offsetY) {
 }
 
 function draw() {
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = "#151123";
 
   const offsetX =
     VIEWPORT_WIDTH_HEIGHT / 2 -
@@ -49,16 +62,41 @@ function draw() {
   const playerChunkX = Math.floor(gameState.playerCoordinate[0] / CHUNK_SIZE);
   const playerChunkY = Math.floor(gameState.playerCoordinate[1] / CHUNK_SIZE);
 
-  const actualChunk = world.getChunk(playerChunkX, playerChunkY);
+  const actualRadius = Math.sin(Date.now() * 0.002) + VISION_RADIUS;
 
-  if (!actualChunk) return;
+  for (let cy = playerChunkY - 1; cy <= playerChunkY + 1; cy++) {
+    for (let cx = playerChunkX - 1; cx <= playerChunkX + 1; cx++) {
+      const chunk = world.getChunk(cx, cy);
 
-  for (let i = 0; i < CHUNK_SIZE; i++) {
-    for (let j = 0; j < CHUNK_SIZE; j++) {
-      drawTile(actualChunk.grid[i][j], j, i, offsetX, offsetY);
+      if (!chunk) continue;
+
+      for (let y = 0; y < CHUNK_SIZE; y++) {
+        for (let x = 0; x < CHUNK_SIZE; x++) {
+          const tileType = chunk.grid[y][x];
+
+          const worldX = cx * CHUNK_SIZE + x;
+          const worldY = cy * CHUNK_SIZE + y;
+
+          const [px, py] = gameState.playerCoordinate;
+
+          const dx = worldX - px;
+          const dy = worldY - py;
+
+          const distSq = dx * dx + dy * dy;
+          const radius = actualRadius * actualRadius;
+
+          if (distSq <= radius) {
+            chunk.discoveredGrid[y][x] = true;
+            drawTile(tileType, worldX, worldY, offsetX, offsetY, "visible");
+          } else if (chunk.discoveredGrid[y][x]) {
+            drawTile(tileType, worldX, worldY, offsetX, offsetY, "visited");
+          }
+        }
+      }
     }
   }
 
+  ctx.globalAlpha = 1;
   player.draw(ctx, offsetX, offsetY);
 }
 
