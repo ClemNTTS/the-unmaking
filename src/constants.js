@@ -8,3 +8,4 @@ export const DIRECTIONS = {
   west: { x: -1, y: 0, opp: "east", entry: { x: 15, y: 8 } },
 };
 export const VISION_RADIUS = 5;
+export const BASE_TIMING = 10;

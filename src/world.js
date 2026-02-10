@@ -1,9 +1,9 @@
-import { CHUNK_SIZE, DIRECTIONS } from "./constants.js";
+import { BASE_TIMING, CHUNK_SIZE, DIRECTIONS } from "./constants.js";
 
 export class World {
   constructor() {
     this.chunks = new Map();
-    this.timing = 100;
+    this.timing = BASE_TIMING;
 
     this.generateInitialChunk();
   }

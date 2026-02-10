@@ -1,4 +1,5 @@
 import {
+  BASE_TIMING,
   CHUNK_SIZE,
   TILE_SIZE,
   VIEWPORT_WIDTH_HEIGHT,
@@ -31,7 +32,7 @@ function drawTile(tileType, worldX, worldY, offsetX, offsetY, state) {
   }
 
   if (state === "visited") {
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.15;
   } else if (state === "visible") {
     ctx.globalAlpha = 1;
   }
@@ -100,9 +101,22 @@ function draw() {
   player.draw(ctx, offsetX, offsetY);
 }
 
+function drawTiming() {
+  //fond allant de noir à rouge plus le timing est bas
+  if (world.timing <= 0) {
+    ctx.fillStyle = "#980a0a";
+  } else {
+    ctx.fillStyle = "#222";
+  }
+  ctx.fillRect(10, 10, BASE_TIMING * 20, 20);
+  ctx.fillStyle = `rgb(${255 * (1 - world.timing / BASE_TIMING)}, 150, 0)`;
+  ctx.fillRect(10, 10, world.timing * 20, 20);
+}
+
 function gameLoop() {
   update();
   draw();
+  drawTiming();
   requestAnimationFrame(gameLoop);
 }
 
