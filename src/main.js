@@ -17,7 +17,7 @@ canvas.width = VIEWPORT_WIDTH_HEIGHT;
 canvas.height = VIEWPORT_WIDTH_HEIGHT;
 
 const combatEngine = new CombatEngine();
-const world = new World(combatEngine);
+let world = new World(combatEngine);
 combatEngine.world = world;
 const player = new Player(world);
 player.x = gameState.playerCoordinate[0];
@@ -26,6 +26,8 @@ player.y = gameState.playerCoordinate[1];
 function update() {
   combatEngine.update();
 }
+
+// --- DRAW FUNCTIONS ---
 
 function drawTile(tileType, worldX, worldY, offsetX, offsetY, state) {
   if (tileType === 1) {
@@ -152,12 +154,25 @@ function drawTiming() {
 }
 
 function drawHUD() {
-  // On récupère les éléments de remplissage (déjà créés dans le HTML)
   const hpFill = document.getElementById("hp-fill");
   const resFill = document.getElementById("res-fill");
 
   if (hpFill) hpFill.style.width = `${(gameState.hp / gameState.maxHp) * 100}%`;
   if (resFill) resFill.style.width = `${gameState.resolution}%`;
+}
+
+function drawGameOver(bool) {
+  const gameOverDiv = document.getElementById("gameOverScreen");
+  const finalEssenceSpan = document.getElementById("finalEssence");
+
+  if (!gameOverDiv) return;
+
+  if (bool) {
+    gameOverDiv.classList.remove("hidden");
+    finalEssenceSpan.innerText = gameState.essence;
+  } else {
+    gameOverDiv.classList.add("hidden");
+  }
 }
 
 function draw() {
@@ -169,9 +184,28 @@ function draw() {
     combatEngine.draw(ctx);
   }
 
+  drawGameOver(gameState.mode === "gameover");
+
   drawHUD();
 }
 
+// --- LOGIC ---
+function resetGame() {
+  gameState.mode = "exploration";
+  gameState.playerCoordinate = [8, 8];
+  gameState.hp = gameState.maxHp;
+  gameState.resolution = 100;
+
+  world = new World(combatEngine);
+  combatEngine.world = world;
+  player.world = world;
+  player.x = 8;
+  player.y = 8;
+
+  document.getElementById("gameOverScreen").classList.add("hidden");
+}
+
+// --- GAME LOOP ---
 function gameLoop() {
   update();
   draw();
@@ -179,8 +213,9 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-/* ==== EXPOSITION ==== */
-
-/* ==================== */
-
 gameLoop();
+
+// --- EVENT LISTENERS ---
+document.getElementById("restartButton").addEventListener("click", () => {
+  resetGame();
+});
