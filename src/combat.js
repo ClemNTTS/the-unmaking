@@ -41,9 +41,16 @@ export class CombatEngine {
     gameState.resolution -= 0.1;
 
     if (gameState.resolution <= 0) {
-      gameState.resolution = 0;
+      gameState.resolution = 100;
       gameState.hp = 1;
       this.notes = [];
+    }
+
+    if (gameState.hp <= 0) {
+      gameState.mode = "exploration";
+      gameState.resolution = 100;
+      console.log("GAME OVER !");
+      return;
     }
 
     const currentTime = Date.now() - this.startTime;
