@@ -1,10 +1,11 @@
 import { BASE_TIMING, CHUNK_SIZE, DIRECTIONS } from "./constants.js";
+import { createRandomPartition } from "./partitions.js";
 
 export class World {
-  constructor() {
+  constructor(combatEngine) {
     this.chunks = new Map();
     this.timing = BASE_TIMING;
-
+    this.combatEngine = combatEngine;
     this.generateInitialChunk();
   }
 
@@ -23,14 +24,46 @@ export class World {
 
     this.drunkenWalk(enter.x, enter.y, grid, exits, visualDoors);
 
+    const entities = [];
+    const floorTiles = [];
+
+    for (let y = 0; y < CHUNK_SIZE; y++) {
+      for (let x = 0; x < CHUNK_SIZE; x++) {
+        if (grid[y][x] === 1 && (x !== enter.x || y !== enter.y)) {
+          floorTiles.push({ x, y });
+        }
+      }
+    }
+
+    if (floorTiles.length > 0 && Math.random() > 0.33) {
+      const pos = floorTiles[Math.floor(Math.random() * floorTiles.length)];
+      const partition = createRandomPartition();
+      entities.push({ x: pos.x, y: pos.y, type: "rift", partition: partition });
+    }
+
     return {
       x: cx,
       y: cy,
       grid: grid,
+      entities: entities,
       discoveredGrid: discoveredGrid,
       isStabilized: true,
       exits: { north: false, south: false, east: false, west: false },
     };
+  }
+
+  removeEntityAt(x, y) {
+    const cx = Math.floor(x / CHUNK_SIZE);
+    const cy = Math.floor(y / CHUNK_SIZE);
+    const chunk = this.getChunk(cx, cy);
+
+    if (!chunk) return;
+
+    const localX = ((x % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+    const localY = ((y % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+    chunk.entities = chunk.entities.filter(
+      (e) => e.x !== localX || e.y !== localY,
+    );
   }
 
   drunkenWalk(startX, startY, grid, ends, visualDoors = []) {
@@ -229,5 +262,18 @@ export class World {
     const localY = ((worldY % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
 
     return chunk.grid[localY][localX];
+  }
+
+  getEntityAt(worldX, worldY) {
+    const cx = Math.floor(worldX / CHUNK_SIZE);
+    const cy = Math.floor(worldY / CHUNK_SIZE);
+    const chunk = this.getChunk(cx, cy);
+
+    if (!chunk) return null;
+
+    const localX = ((worldX % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+    const localY = ((worldY % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+
+    return chunk.entities.find((e) => e.x === localX && e.y === localY);
   }
 }

@@ -9,3 +9,9 @@ export const DIRECTIONS = {
 };
 export const VISION_RADIUS = 5;
 export const BASE_TIMING = 10;
+export const LANE_WIDTH = VIEWPORT_WIDTH_HEIGHT / 4;
+export const HIT_ZONE_Y = VIEWPORT_WIDTH_HEIGHT - 50;
+export const NOTE_SPEED = 0.32;
+export const PERFECT_WINDOW = 50;
+export const GOOD_WINDOW = 150;
+export const MISS_LIMIT = -200;
